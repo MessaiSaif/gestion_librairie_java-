@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Sanctions - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .table-glass{width:100%;border-collapse:collapse;margin-top:1.5rem;background:rgba(25,25,35,0.6);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+        .table-glass th,.table-glass td{padding:1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .table-glass th{background:rgba(255,255,255,0.05);font-weight:600;color:var(--text-main)}
+        .table-glass td{color:var(--text-muted);font-size:0.9rem}
+        .badge { padding:0.25rem 0.75rem;border-radius:99px;font-size:0.75rem;font-weight:600; }
+        .badge-success { background:rgba(16,185,129,0.2);color:#10b981; }
+        .badge-danger { background:rgba(239,68,68,0.2);color:#ef4444; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>BiblioAdmin</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"><span>Tableau de bord</span></a>
+            <a th:href="@{/admin/livres}" class="sidebar-link"><span>Gestion des Livres</span></a>
+            <a th:href="@{/admin/membres}" class="sidebar-link"><span>Gestion des Membres</span></a>
+            <a th:href="@{/admin/categories}" class="sidebar-link"><span>Gestion des Catégories</span></a>
+            <a th:href="@{/admin/emprunts}" class="sidebar-link"><span>Emprunts</span></a>
+            <a th:href="@{/admin/sanctions}" class="sidebar-link active"><span>Sanctions</span></a>
+            <a th:href="@{/admin/historique}" class="sidebar-link"><span>Historique Global</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Sanctions</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Visualisez toutes les amendes des membres.</p>
+        </div>
+        
+        <table class="table-glass">
+            <thead>
+                <tr>
+                    <th>Membre</th>
+                    <th>Livre</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="sanc : ${sanctions}">
+                    <td style="color:var(--text-main);font-weight:500;" th:text="${sanc.membre.nom + ' ' + sanc.membre.prenom}"></td>
+                    <td th:text="${sanc.emprunt.livre.titre}"></td>
+                    <td th:text="${#numbers.formatDecimal(sanc.montant, 1, 3)} + ' TND'"></td>
+                    <td>
+                        <span th:class="${sanc.payee} ? 'badge badge-success' : 'badge badge-danger'"
+                              th:text="${sanc.payee} ? 'Payée' : 'Non Payée'"></span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(sanctions)}">
+                    <td colspan="4" style="text-align:center;padding:2rem;">Aucune sanction.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

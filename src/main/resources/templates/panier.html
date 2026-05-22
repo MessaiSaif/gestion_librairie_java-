@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Panier - Gestion de Librairie</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .panier-item { background:rgba(25,25,35,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>Ma Bibliothèque</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/member/dashboard}" class="sidebar-link"><span>Accueil</span></a>
+            <a th:href="@{/member/catalogue}" class="sidebar-link"><span>Catalogue</span></a>
+            <a th:href="@{/member/emprunts}" class="sidebar-link"><span>Mes Emprunts</span></a>
+            <a th:href="@{/member/panier}" class="sidebar-link active">
+                <span>Panier (<span th:text="${session.panier != null ? session.panier.size() : 0}">0</span>)</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Mon Panier d'Emprunt</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Vérifiez votre sélection avant de confirmer vos emprunts.</p>
+        </div>
+
+        <div th:if="${success_msg}" class="alert alert-success" th:text="${success_msg}"></div>
+        <div th:if="${error_msg}" class="alert alert-error" th:text="${error_msg}"></div>
+
+        <div style="margin-top:2rem;">
+            <div th:if="${#lists.isEmpty(livres_panier)}" class="glass-card" style="text-align:center;padding:3rem;max-width:100%;">
+                <p style="color:var(--text-muted);margin-bottom:1rem;">Votre panier est actuellement vide.</p>
+                <a th:href="@{/member/catalogue}" class="btn btn-primary" style="width:auto;">Parcourir le catalogue</a>
+            </div>
+
+            <th:block th:if="${!#lists.isEmpty(livres_panier)}">
+                <div th:each="livre : ${livres_panier}" class="panier-item">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:600;color:var(--text-main);margin-bottom:0.25rem;" th:text="${livre.titre}"></div>
+                        <div style="color:var(--text-muted);font-size:0.9rem;" th:text="'de ' + ${livre.auteur}"></div>
+                    </div>
+                    <form method="POST" th:action="@{/member/panier}" style="margin:0;">
+                        <input type="hidden" name="livre_id" th:value="${livre.id}">
+                        <input type="hidden" name="action" value="retirer">
+                        <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,0.2);color:#ef4444;width:auto;">Retirer</button>
+                    </form>
+                </div>
+
+                <div style="margin-top:2rem;display:flex;justify-content:flex-end;">
+                    <form method="POST" th:action="@{/member/panier}">
+                        <input type="hidden" name="action" value="confirmer">
+                        <button type="submit" class="btn btn-primary" style="width:auto;" onclick="return confirm('Confirmer tous vos emprunts ?')">Confirmer les emprunts</button>
+                    </form>
+                </div>
+            </th:block>
+        </div>
+    </main>
+</div>
+</body>
+</html>

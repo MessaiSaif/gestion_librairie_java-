@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord Administrateur</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- SIDEBAR ADMIN -->
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>BiblioAdmin</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="sidebar-link active"><span>Tableau de bord</span></a>
+            <a th:href="@{/admin/livres}" class="sidebar-link"><span>Gestion des Livres</span></a>
+            <a th:href="@{/admin/membres}" class="sidebar-link"><span>Gestion des Membres</span></a>
+            <a th:href="@{/admin/categories}" class="sidebar-link"><span>Gestion des Catégories</span></a>
+            <a th:href="@{/admin/emprunts}" class="sidebar-link"><span>Emprunts</span></a>
+            <a th:href="@{/admin/sanctions}" class="sidebar-link"><span>Sanctions</span></a>
+            <a th:href="@{/admin/historique}" class="sidebar-link"><span>Historique Global</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Bienvenue, <span th:text="${session.user_name}">Admin</span></h1>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;">Ceci est votre tableau de bord administrateur. D'ici, vous pourrez gérer l'ensemble de la librairie.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+            <div class="glass-card" style="padding: 1.5rem; max-width: 100%;">
+                <h3 style="margin-bottom: 1rem;">Gestion des Membres</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Consultez et gérez les membres inscrits à la bibliothèque.</p>
+                <a th:href="@{/admin/membres}" class="btn btn-primary" style="padding: 0.75rem;">Voir</a>
+            </div>
+            <div class="glass-card" style="padding: 1.5rem; max-width: 100%;">
+                <h3 style="margin-bottom: 1rem;">Nouveau Livre</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Enregistrez un nouvel ouvrage dans le catalogue.</p>
+                <a th:href="@{/admin/livres(action='add')}" class="btn btn-primary" style="padding: 0.75rem;">Ajouter</a>
+            </div>
+            <div class="glass-card" style="padding: 1.5rem; max-width: 100%;">
+                <h3 style="margin-bottom: 1rem;">Gestion Emprunts</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Validez les retours et gérez les emprunts en cours.</p>
+                <a th:href="@{/admin/emprunts}" class="btn btn-primary" style="padding: 0.75rem;">Voir</a>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

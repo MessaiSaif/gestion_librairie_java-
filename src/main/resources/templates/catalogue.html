@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue - Gestion de Librairie</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .catalog-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:2rem; }
+        .book-card { background:rgba(25,25,35,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1.5rem;display:flex;flex-direction:column; }
+        .book-title { font-size:1.25rem;font-weight:600;margin-bottom:0.5rem;color:var(--text-main); }
+        .book-author { color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem; }
+        .book-meta { margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1); }
+        .badge { padding:0.25rem 0.75rem;border-radius:99px;font-size:0.75rem;font-weight:600; }
+        .badge-success { background:rgba(16,185,129,0.2);color:#10b981; }
+        .badge-warning { background:rgba(245,158,11,0.2);color:#f59e0b; }
+        .badge-danger { background:rgba(239,68,68,0.2);color:#ef4444; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>Ma Bibliothèque</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/member/dashboard}" class="sidebar-link"><span>Accueil</span></a>
+            <a th:href="@{/member/catalogue}" class="sidebar-link active"><span>Catalogue</span></a>
+            <a th:href="@{/member/emprunts}" class="sidebar-link"><span>Mes Emprunts</span></a>
+            <a th:href="@{/member/panier}" class="sidebar-link">
+                <span>Panier (<span th:text="${session.panier != null ? session.panier.size() : 0}">0</span>)</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Catalogue des Livres</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Explorez notre collection et empruntez vos prochains favoris.</p>
+        </div>
+
+        <div th:if="${success_msg}" class="alert alert-success" th:text="${success_msg}"></div>
+        <div th:if="${error_msg}" class="alert alert-error" th:text="${error_msg}"></div>
+
+        <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+            <input type="text" id="catalog-search" class="form-control" placeholder="Rechercher par titre ou auteur..." style="max-width:400px;flex:1;">
+            <form method="GET" th:action="@{/member/catalogue}" style="margin:0;display:flex;gap:0.5rem;">
+                <select name="categorie_id" class="form-control" style="width:auto;" onchange="this.form.submit()">
+                    <option value="">Toutes les catégories</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.nom}"
+                            th:selected="${filtre_categorie != null and filtre_categorie == cat.id}">
+                    </option>
+                </select>
+            </form>
+        </div>
+
+        <div class="catalog-grid" id="catalogueGrid">
+            <p th:if="${#lists.isEmpty(livres)}" style="color:var(--text-muted);">Aucun livre disponible pour le moment.</p>
+            <div th:each="livre : ${livres}" class="book-card">
+                <div class="book-title" th:text="${livre.titre}"></div>
+                <div class="book-author" th:text="'de ' + ${livre.auteur}"></div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;">
+                    Catégorie: <span th:text="${livre.categorie != null ? livre.categorie.nom : 'Général'}"></span>
+                </div>
+                <div class="book-meta">
+                    <th:block th:with="empruntes=${empruntCounts.getOrDefault(livre.id, 0)}, restant=${livre.nombreExemplaires - empruntCounts.getOrDefault(livre.id, 0)}">
+                        <span th:if="${livre.nombreExemplaires == 0}" class="badge badge-danger">Indisponible</span>
+                        <span th:if="${livre.nombreExemplaires > 0 and restant <= 0}" class="badge badge-warning">Emprunté</span>
+                        <span th:if="${restant > 0}" class="badge badge-success">Disponible (<span th:text="${restant}"></span>/<span th:text="${livre.nombreExemplaires}"></span>)</span>
+
+                        <th:block th:if="${restant > 0}">
+                            <span th:if="${panier_ids != null and panier_ids.contains(livre.id)}" class="badge" style="background:rgba(255,255,255,0.1);">Dans le panier</span>
+                            <form th:if="${panier_ids == null or !panier_ids.contains(livre.id)}" method="POST" th:action="@{/member/panier}" style="margin:0;">
+                                <input type="hidden" name="livre_id" th:value="${livre.id}">
+                                <input type="hidden" name="action" value="ajouter">
+                                <button type="submit" class="btn btn-primary btn-sm" style="width:auto;">Ajouter</button>
+                            </form>
+                        </th:block>
+                        <th:block th:if="${restant <= 0 and livre.nombreExemplaires > 0}">
+                            <form method="POST" th:action="@{/member/catalogue}" style="margin:0;">
+                                <input type="hidden" name="livre_id" th:value="${livre.id}">
+                                <input type="hidden" name="action" value="reserver">
+                                <button type="submit" class="btn btn-sm" style="background:var(--secondary);color:white;width:auto;">Réserver</button>
+                            </form>
+                        </th:block>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

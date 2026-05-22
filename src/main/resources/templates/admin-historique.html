@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique Global - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .table-glass{width:100%;border-collapse:collapse;margin-top:1.5rem;background:rgba(25,25,35,0.6);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+        .table-glass th,.table-glass td{padding:1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .table-glass th{background:rgba(255,255,255,0.05);font-weight:600;color:var(--text-main)}
+        .table-glass td{color:var(--text-muted);font-size:0.9rem}
+        .badge { padding:0.25rem 0.75rem;border-radius:99px;font-size:0.75rem;font-weight:600; }
+        .badge-success { background:rgba(16,185,129,0.2);color:#10b981; }
+        .badge-danger { background:rgba(239,68,68,0.2);color:#ef4444; }
+        .badge-info { background:rgba(59,130,246,0.2);color:#3b82f6; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>BiblioAdmin</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"><span>Tableau de bord</span></a>
+            <a th:href="@{/admin/livres}" class="sidebar-link"><span>Gestion des Livres</span></a>
+            <a th:href="@{/admin/membres}" class="sidebar-link"><span>Gestion des Membres</span></a>
+            <a th:href="@{/admin/categories}" class="sidebar-link"><span>Gestion des Catégories</span></a>
+            <a th:href="@{/admin/emprunts}" class="sidebar-link"><span>Emprunts</span></a>
+            <a th:href="@{/admin/sanctions}" class="sidebar-link"><span>Sanctions</span></a>
+            <a th:href="@{/admin/historique}" class="sidebar-link active"><span>Historique Global</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Historique Global</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Historique complet de tous les emprunts de la bibliothèque.</p>
+        </div>
+        
+        <table class="table-glass">
+            <thead>
+                <tr>
+                    <th>Membre</th>
+                    <th>Livre</th>
+                    <th>Date Emprunt</th>
+                    <th>Retour Prévu</th>
+                    <th>Retour Effectif</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="emp : ${emprunts}">
+                    <td style="color:var(--text-main);font-weight:500;" th:text="${emp.membre.nom + ' ' + emp.membre.prenom}"></td>
+                    <td th:text="${emp.livre.titre}"></td>
+                    <td th:text="${#temporals.format(emp.dateEmprunt, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${#temporals.format(emp.dateRetourPrevue, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${emp.dateRetourEffective != null ? #temporals.format(emp.dateRetourEffective, 'dd/MM/yyyy') : '-'}"></td>
+                    <td>
+                        <span th:class="${emp.statut == 'retourne'} ? 'badge badge-success' : (${emp.statut == 'en_retard'} ? 'badge badge-danger' : 'badge badge-info')"
+                              th:text="${emp.statut == 'retourne'} ? 'Retourné' : (${emp.statut == 'en_retard'} ? 'En retard' : 'En cours')">
+                        </span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(emprunts)}">
+                    <td colspan="6" style="text-align:center;padding:2rem;">Aucun historique.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

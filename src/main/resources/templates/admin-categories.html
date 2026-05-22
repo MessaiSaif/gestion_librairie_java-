@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Catégories - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .table-glass{width:100%;border-collapse:collapse;margin-top:1.5rem;background:rgba(25,25,35,0.6);border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+        .table-glass th,.table-glass td{padding:1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .table-glass th{background:rgba(255,255,255,0.05);font-weight:600;color:var(--text-main)}
+        .table-glass td{color:var(--text-muted);font-size:0.9rem}
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>BiblioAdmin</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"><span>Tableau de bord</span></a>
+            <a th:href="@{/admin/livres}" class="sidebar-link"><span>Gestion des Livres</span></a>
+            <a th:href="@{/admin/membres}" class="sidebar-link"><span>Gestion des Membres</span></a>
+            <a th:href="@{/admin/categories}" class="sidebar-link active"><span>Gestion des Catégories</span></a>
+            <a th:href="@{/admin/emprunts}" class="sidebar-link"><span>Emprunts</span></a>
+            <a th:href="@{/admin/sanctions}" class="sidebar-link"><span>Sanctions</span></a>
+            <a th:href="@{/admin/historique}" class="sidebar-link"><span>Historique Global</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Gestion des Catégories</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Gérez les catégories du catalogue.</p>
+        </div>
+        <div th:if="${success_msg}" class="alert alert-success" th:text="${success_msg}"></div>
+        <div th:if="${error_msg}" class="alert alert-error" th:text="${error_msg}"></div>
+
+        <!-- Add/Edit Form -->
+        <div class="glass-card" style="padding:2rem;max-width:100%;margin-bottom:2rem;">
+            <h2 th:text="${edit_cat != null} ? 'Modifier la catégorie' : 'Ajouter une catégorie'">Ajouter</h2>
+            <form method="POST" th:action="@{/admin/categories}">
+                <input type="hidden" name="id" th:if="${edit_cat != null}" th:value="${edit_cat.id}">
+                <div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;margin-top:1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Nom</label>
+                        <input type="text" name="nom" class="form-control" required th:value="${edit_cat?.nom}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" name="description" class="form-control" th:value="${edit_cat?.description}">
+                    </div>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width:auto;">Enregistrer</button>
+                    <a th:href="@{/admin/categories}" class="btn" style="background:rgba(255,255,255,0.1);width:auto;">Annuler</a>
+                </div>
+            </form>
+        </div>
+
+        <table class="table-glass">
+            <thead>
+                <tr><th>#</th><th>Nom</th><th>Description</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="cat : ${categories}">
+                    <td th:text="${cat.id}"></td>
+                    <td style="color:var(--text-main);font-weight:500;" th:text="${cat.nom}"></td>
+                    <td th:text="${cat.description}"></td>
+                    <td>
+                        <a th:href="@{/admin/categories(edit=${cat.id})}" style="color:var(--primary);margin-right:1rem;text-decoration:none;">Modifier</a>
+                        <a th:href="@{/admin/categories(delete=${cat.id})}" style="color:#ef4444;text-decoration:none;" onclick="return confirm('Supprimer cette catégorie ?')">Supprimer</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(categories)}">
+                    <td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucune catégorie.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

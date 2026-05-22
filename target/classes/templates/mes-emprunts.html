@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Emprunts</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .list-card { background:rgba(25,25,35,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem; }
+        .badge { padding:0.25rem 0.75rem;border-radius:99px;font-size:0.75rem;font-weight:600; }
+        .badge-success { background:rgba(16,185,129,0.2);color:#10b981; }
+        .badge-warning { background:rgba(245,158,11,0.2);color:#f59e0b; }
+        .badge-danger { background:rgba(239,68,68,0.2);color:#ef4444; }
+        .badge-info { background:rgba(59,130,246,0.2);color:#3b82f6; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>Ma Bibliothèque</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/member/dashboard}" class="sidebar-link"><span>Accueil</span></a>
+            <a th:href="@{/member/catalogue}" class="sidebar-link"><span>Catalogue</span></a>
+            <a th:href="@{/member/emprunts}" class="sidebar-link active"><span>Mes Emprunts</span></a>
+            <a th:href="@{/member/panier}" class="sidebar-link">
+                <span>Panier (<span th:text="${session.panier != null ? session.panier.size() : 0}">0</span>)</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Mes Emprunts</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Retrouvez tous vos emprunts en cours et votre historique.</p>
+        </div>
+
+        <div style="margin-top:2rem;">
+            <input type="text" id="searchMyLoans" class="form-control" placeholder="Rechercher un emprunt..." style="max-width:400px;margin-bottom:1.5rem;">
+
+            <p th:if="${#lists.isEmpty(emprunts)}" style="color:var(--text-muted);">Vous n'avez aucun emprunt pour le moment.</p>
+
+            <div id="loansContainer">
+                <div th:each="emp : ${emprunts}" class="list-card">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:600;color:var(--text-main);" th:text="${emp.livre.titre}"></div>
+                        <div style="color:var(--text-muted);font-size:0.9rem;margin-top:0.25rem;" th:text="'de ' + ${emp.livre.auteur}"></div>
+                        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
+                            Emprunté le : <span th:text="${#temporals.format(emp.dateEmprunt, 'dd/MM/yyyy')}"></span>
+                        </div>
+                        <div th:if="${emp.dateRetourPrevue != null}" style="font-size:0.85rem;color:var(--text-muted);">
+                            Retour prévu : <span th:text="${#temporals.format(emp.dateRetourPrevue, 'dd/MM/yyyy')}"></span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span th:class="${emp.statut == 'retourne'} ? 'badge badge-success' : (${emp.statut == 'en_retard'} ? 'badge badge-danger' : 'badge badge-info')"
+                              th:text="${emp.statut == 'retourne'} ? 'Retourné' : (${emp.statut == 'en_retard'} ? 'En retard' : 'En cours')">
+                        </span>
+                        <div th:if="${emp.dateRetourEffective != null}" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
+                            Retourné le : <span th:text="${#temporals.format(emp.dateRetourEffective, 'dd/MM/yyyy')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

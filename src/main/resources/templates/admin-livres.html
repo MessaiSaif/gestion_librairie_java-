@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Livres - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .table-glass { width:100%; border-collapse:collapse; margin-top:1.5rem; background:rgba(25,25,35,0.6); border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); }
+        .table-glass th, .table-glass td { padding:1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .table-glass th { background:rgba(255,255,255,0.05); font-weight:600; color:var(--text-main); }
+        .table-glass td { color:var(--text-muted); font-size:0.9rem; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><h2>BiblioAdmin</h2></div>
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="sidebar-link"><span>Tableau de bord</span></a>
+            <a th:href="@{/admin/livres}" class="sidebar-link active"><span>Gestion des Livres</span></a>
+            <a th:href="@{/admin/membres}" class="sidebar-link"><span>Gestion des Membres</span></a>
+            <a th:href="@{/admin/categories}" class="sidebar-link"><span>Gestion des Catégories</span></a>
+            <a th:href="@{/admin/emprunts}" class="sidebar-link"><span>Emprunts</span></a>
+            <a th:href="@{/admin/sanctions}" class="sidebar-link"><span>Sanctions</span></a>
+            <a th:href="@{/admin/historique}" class="sidebar-link"><span>Historique Global</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a th:href="@{/auth/logout}" class="btn btn-primary btn-sm">Déconnexion</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="welcome-banner">
+            <h1>Gestion du Catalogue</h1>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Ajoutez, modifiez ou supprimez les ouvrages du catalogue.</p>
+        </div>
+
+        <div th:if="${success_msg}" class="alert alert-success" th:text="${success_msg}"></div>
+        <div th:if="${error_msg}" class="alert alert-error" th:text="${error_msg}"></div>
+
+        <!-- Add/Edit Form -->
+        <div th:if="${edit_livre != null}" class="glass-card" style="padding:2rem;max-width:100%;margin-bottom:2rem;">
+            <h2 th:text="${isEdit} ? 'Modifier le livre' : 'Ajouter un nouveau livre'">Ajouter</h2>
+            <form method="POST" th:action="@{/admin/livres}">
+                <input type="hidden" name="id" th:if="${isEdit}" th:value="${edit_livre.id}">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Titre</label>
+                        <input type="text" name="titre" class="form-control" required th:value="${edit_livre.titre}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Auteur</label>
+                        <input type="text" name="auteur" class="form-control" required th:value="${edit_livre.auteur}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" name="isbn" class="form-control" th:value="${edit_livre.isbn}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Année de publication</label>
+                        <input type="number" name="anneePublication" class="form-control" th:value="${edit_livre.anneePublication}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catégorie</label>
+                        <select name="categorie_id" class="form-control">
+                            <option value="">-- Aucune --</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.nom}"
+                                    th:selected="${edit_livre.categorie != null and edit_livre.categorie.id == cat.id}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre d'exemplaires</label>
+                        <input type="number" name="nombreExemplaires" class="form-control" th:value="${edit_livre.nombreExemplaires ?: 1}">
+                    </div>
+                </div>
+                <div style="margin-top:1rem;display:flex;gap:1rem;">
+                    <button type="submit" class="btn btn-primary" style="width:auto;">Enregistrer</button>
+                    <a th:href="@{/admin/livres}" class="btn" style="background:rgba(255,255,255,0.1);width:auto;">Annuler</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Toolbar -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1rem;">
+            <input type="text" id="searchBook" class="form-control" placeholder="Rechercher un livre, auteur, ISBN..." style="max-width:300px;">
+            <a th:href="@{/admin/livres(action='add')}" class="btn btn-primary" style="width:auto;">+ Nouveau Livre</a>
+        </div>
+
+        <!-- Books Table -->
+        <table class="table-glass">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Auteur</th>
+                    <th>Catégorie</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="booksTable">
+                <tr th:each="livre : ${livres}">
+                    <td style="color:var(--text-main);font-weight:500;" th:text="${livre.titre}"></td>
+                    <td th:text="${livre.auteur}"></td>
+                    <td th:text="${livre.categorie != null ? livre.categorie.nom : 'Général'}"></td>
+                    <td th:text="${livre.nombreExemplaires}"></td>
+                    <td>
+                        <a th:href="@{/admin/livres(edit=${livre.id})}" style="color:var(--primary);margin-right:1rem;text-decoration:none;">Modifier</a>
+                        <a th:href="@{/admin/livres(delete=${livre.id})}" style="color:#ef4444;text-decoration:none;" onclick="return confirm('Supprimer ce livre ?')">Supprimer</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(livres)}">
+                    <td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">Aucun livre dans le catalogue.</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>
